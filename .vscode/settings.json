@@ -1,0 +1,15 @@
+{
+  "task.allowAutomaticTasks": "on",
+  "terminal.integrated.defaultProfile.osx": "tmux-claude",
+  "terminal.integrated.profiles.osx": {
+    "tmux-claude": {
+      "path": "/opt/homebrew/bin/tmux",
+      "args": ["new-session", "-A", "-s", "claude-agent-team", "claude"],
+      "icon": "terminal-tmux",
+      "overrideName": true
+    },
+    "zsh": {
+      "path": "/bin/zsh"
+    }
+  }
+}

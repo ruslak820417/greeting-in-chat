@@ -1,0 +1,20 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Start Agent Teams (tmux + Claude)",
+      "type": "shell",
+      "command": "tmux has-session -t claude-agent-team 2>/dev/null && tmux attach -t claude-agent-team || tmux new-session -s claude-agent-team 'claude'",
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated",
+        "focus": true
+      },
+      "isBackground": true,
+      "problemMatcher": [],
+      "runOptions": {
+        "runOn": "folderOpen"
+      }
+    }
+  ]
+}
