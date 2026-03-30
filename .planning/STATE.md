@@ -3,13 +3,13 @@
 ## Current Position
 - **Phase:** 20 -- Cold Start Call Flow Repair
 - **Current Plan:** 3 of 3
-- **Status:** IN_PROGRESS
+- **Status:** PHASE_COMPLETE
 - **Build:** 99 (v4.3.0+)
 
 ## Progress
 - Plan 20-01: COMPLETE (ColdStartCoordinator extraction)
 - Plan 20-02: COMPLETE (Audio session lifecycle fix)
-- Plan 20-03: PENDING
+- Plan 20-03: COMPLETE (SDP pipeline hardening + diagnostics)
 
 ## Decisions
 - Cold start call flow uses 3-path coordinator (VoIP push, WebSocket get-call-state, pending queue)
@@ -23,6 +23,10 @@
 - Use ColdStartCoordinator.hasAnswer (boolean) instead of .answerUUID for isColdStartIncoming check
 - Clear cold start audio state after re-notification to prevent stale state on subsequent calls
 - RTCAudioBridge native module and AppDelegate.swift confirmed correct -- no changes needed
+- getCachedTurnServers() with 1-hour TTL cache for consistent TURN delivery across push and WebSocket
+- push.js prefers callData.turnServers from getCachedTurnServers() over static env var lookup
+- VoIP payload size check removes SDP (not TURN) when over 4500 bytes
+- Duplicate offer suppression via ColdStartCoordinator.isHandled in MessagingService offer handler
 
 ## Known Issues
 - PendingVoIPCall was consumed destructively (fixed build 98)
@@ -36,7 +40,8 @@
 |-------|------|----------|-------|-------|
 | 20    | 01   | 8min     | 2     | 6     |
 | 20    | 02   | 2min     | 2     | 2     |
+| 20    | 03   | 5min     | 2     | 4     |
 
 ## Last Session
-- **Stopped At:** Completed 20-02-PLAN.md
-- **Timestamp:** 2026-03-30T05:51:36Z
+- **Stopped At:** Completed 20-03-PLAN.md
+- **Timestamp:** 2026-03-30T05:54:36Z
