@@ -6,9 +6,9 @@
 
 **Requirements:** [COLD-01, COLD-02, COLD-03, COLD-04]
 
-**Plans:** 1/3 plans executed
+**Plans:** 2/3 plans executed
 
 Plans:
 - [x] 20-01-PLAN.md -- Consolidate cold start state and extract ColdStartCoordinator module
-- [ ] 20-02-PLAN.md -- Fix audio session lifecycle for cold start calls
+- [x] 20-02-PLAN.md -- Fix audio session lifecycle for cold start calls
 - [ ] 20-03-PLAN.md -- Harden SDP delivery and add end-to-end cold start logging

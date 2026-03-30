@@ -2,13 +2,13 @@
 
 ## Current Position
 - **Phase:** 20 -- Cold Start Call Flow Repair
-- **Current Plan:** 2 of 3
+- **Current Plan:** 3 of 3
 - **Status:** IN_PROGRESS
 - **Build:** 99 (v4.3.0+)
 
 ## Progress
 - Plan 20-01: COMPLETE (ColdStartCoordinator extraction)
-- Plan 20-02: PENDING
+- Plan 20-02: COMPLETE (Audio session lifecycle fix)
 - Plan 20-03: PENDING
 
 ## Decisions
@@ -20,6 +20,9 @@
 - ColdStartCoordinator singleton owns all cold start state -- replaces scattered global state
 - Lazy require() in ColdStartCoordinator to avoid circular imports
 - Backward-compat global.__coldStartCall proxy delegates to ColdStartCoordinator getters
+- Use ColdStartCoordinator.hasAnswer (boolean) instead of .answerUUID for isColdStartIncoming check
+- Clear cold start audio state after re-notification to prevent stale state on subsequent calls
+- RTCAudioBridge native module and AppDelegate.swift confirmed correct -- no changes needed
 
 ## Known Issues
 - PendingVoIPCall was consumed destructively (fixed build 98)
@@ -32,7 +35,8 @@
 | Phase | Plan | Duration | Tasks | Files |
 |-------|------|----------|-------|-------|
 | 20    | 01   | 8min     | 2     | 6     |
+| 20    | 02   | 2min     | 2     | 2     |
 
 ## Last Session
-- **Stopped At:** Completed 20-01-PLAN.md
-- **Timestamp:** 2026-03-30T05:46:41Z
+- **Stopped At:** Completed 20-02-PLAN.md
+- **Timestamp:** 2026-03-30T05:51:36Z
