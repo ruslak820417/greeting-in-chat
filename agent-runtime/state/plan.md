@@ -1,53 +1,70 @@
-# Execution Plan
+# QRChat Team — Plan: Invite Links System
 
-> Автор: showrunner
-> Статус: COMPLETED
-> Дата создания: 2026-03-13
-> Дата завершения: 2026-03-19
+## Obiectiv
+Implementarea sistemului de invite links — partajarea contactelor prin link criptat (WhatsApp/Viber/SMS), cu double handshake, TTL configurabil (30m/1h/24h), tracking status in Supabase.
 
----
+## Decizii luate
+- Domeniu: Railway existent (exciting-success-production-d272.up.railway.app)
+- TTL: utilizatorul alege (30m / 1h / 24h)
+- Double handshake: DA — ambii trebuie sa accepte
+- Supabase project: `wquzcormtzjeagqktmtc` (eu-central-1, free tier)
+- Securitate: linkSecret 32 bytes in URL fragment (#), payload criptat pe server, Ed25519 semnatura
 
-## Этапы выполнения
+## Faza 1 — Backend + Securitate (paralel)
 
-### Этап 1: Research (ПАРАЛЛЕЛЬНО)
-| Задача | Исполнитель | Статус |
-|--------|-------------|--------|
-| Исследование темы Agent Teams | web-researcher | ✅ completed |
-| Первичный визуальный план | visual-director | ✅ completed |
+### security-engineer
+- Implementeaza InviteLinkCrypto: linkSecret gen, HKDF derivare linkId + encKey
+- Encrypt/decrypt payload cu nacl.secretbox
+- Ed25519 sign/verify pe payload
+- Fisier nou: src/crypto/InviteLinkCrypto.ts
 
-### Этап 2: Verification
-| Задача | Исполнитель | Статус |
-|--------|-------------|--------|
-| Проверка тезисов из research-summary | fact-checker | ✅ completed |
-| Заметки по верификации | fact-checker | ✅ completed |
+### backend-engineer
+- Creeaza tabelul invite_links in Supabase (migration SQL)
+- Creeaza 3 Edge Functions: invite-create, invite-validate, invite-accept
+- Configureaza RLS policies
+- Configureaza pg_cron cleanup (la 5 min)
+- Activeaza Realtime pe tabel
+- Creeaza src/services/SupabaseService.ts (client init)
+- Creeaza src/services/InviteLinkService.ts (API calls)
 
-### Этап 3: Production (ПАРАЛЛЕЛЬНО)
-| Задача | Исполнитель | Статус |
-|--------|-------------|--------|
-| Сценарий видео | script-architect | ✅ completed |
-| Image prompts | visual-director | ✅ completed |
+## Faza 2 — Deep Links + Ecrane (paralel)
 
-### Этап 4: Packaging
-| Задача | Исполнитель | Статус |
-|--------|-------------|--------|
-| Финальный отчёт | pdf-producer | ✅ completed |
-| PDF-экспорт | pdf-producer | ✅ completed |
+### network-engineer
+- Deep link handler in App.tsx (Linking API)
+- Parsare URL: railway-url/invite/CODE#linkSecret
+- Rutare catre InviteAcceptScreen
+- Gestionare cold start + warm start
 
----
+### frontend-engineer
+- Ecran nou: CreateInviteScreen (TTL selector, create button)
+- Ecran nou: ShareInviteScreen (QR + link + copy + share sheet)
+- Ecran nou: InviteAcceptScreen (numele creatorului, Accept/Decline)
+- Ecran nou: InviteManagementScreen (lista link-uri + status + countdown)
+- Buton "Share Link" pe QRGenerateScreen
+- Hook: useInviteRealtime (Supabase Realtime)
+- i18n: toate stringurile noi in en/ro/ru/fr
+- Navigatie: adauga ecranele noi in React Navigation
 
-## Зависимости
+## Faza 3 — QA + Integrare
+
+### qa-engineer
+- Teste: create invite, validate, accept, expire, revoke
+- Teste: double handshake flow complet
+- Teste: brute force protection (rate limiting)
+- Teste: expired link handling
+- Test pe simulator + dispozitiv fizic
+
+### prompt-architect
+- Scrie prompt-uri detaliate pentru fiecare agent inainte de fiecare faza
+
+## Dependente
 
 ```
-web-researcher ─────→ fact-checker ─────→ script-architect
-      │                                         │
-      └───→ visual-director                     │
-                  │                              │
-                  └─────────────→ pdf-producer ←─┘
+prompt-architect ──→ TOTI (scrie prompt-urile intai)
+security-engineer ──→ backend-engineer (crypto module necesar pentru Edge Functions)
+                  ──→ frontend-engineer (encrypt/decrypt in ecrane)
+backend-engineer ──→ frontend-engineer (API-uri necesare pentru ecrane)
+                 ──→ network-engineer (URL format pentru deep links)
+network-engineer ──→ frontend-engineer (deep link handler necesitar pentru navigatie)
+TOTI ────────────→ qa-engineer (teste dupa implementare)
 ```
-
-## Параллелизация
-
-- **Wave 1:** web-researcher + visual-director (независимые, стартуют одновременно)
-- **Wave 2:** fact-checker (ждёт research-summary)
-- **Wave 3:** script-architect + visual-director:image-prompts (ждут verified-claims)
-- **Wave 4:** pdf-producer (ждёт все артефакты)

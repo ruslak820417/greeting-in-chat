@@ -1,0 +1,9 @@
+{
+  "model_profile": "quality",
+  "agents": {
+    "research": true,
+    "plan_check": true,
+    "verifier": true
+  },
+  "branching": true
+}

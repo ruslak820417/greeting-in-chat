@@ -11,5 +11,6 @@
     "zsh": {
       "path": "/bin/zsh"
     }
-  }
+  },
+  "claudeCode.useTerminal": true
 }

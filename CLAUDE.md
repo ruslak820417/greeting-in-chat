@@ -1,116 +1,94 @@
-# Agent Teams Demo Project
+# QRChat — Agent Teams
 
-Этот проект предназначен для демонстрации мультиагентной системы в Claude Code для YouTube-контента. Основная цель проекта: показать зримо и понятно, как несколько специализированных агентов исследуют тему, проверяют факты, пишут сценарий, готовят визуалы и собирают итоговый пакет материалов.
+Acest proiect coordoneaza o echipa de 7 agenti specializati care lucreaza impreuna la dezvoltarea, securizarea si publicarea aplicatiei QRChat — un messenger criptat React Native.
 
-## Обязательный режим запуска
+## Proiectul tinta
 
-Для этого проекта запуск `Agent Teams` через `tmux` обязателен.
+- **Codebase:** `/Users/ruslanconstantinovici/QRChat`
+- **Tech stack:** React Native 0.84, TypeScript, Node.js server, TweetNaCl crypto, WebRTC, SQLite
+- **Versiune curenta:** 3.0.6
 
-- Не использовать `in-process` режим для основной демонстрации.
-- Запускать lead-сессию Claude Code только внутри `tmux`.
-- Все demo-сессии с агентами должны открываться в split-pane режиме.
-- Если используется iTerm2, допустим запуск через `tmux -CC`, как рекомендованный вход в `tmux`.
+## Reguli de lucru in echipa
 
-Основание: официальная документация Claude Code по Agent Teams:
+### Dependente intre agenti
 
-- https://code.claude.com/docs/en/agent-teams
+Agentii sunt interdependenti. Daca un agent nu poate finaliza o sarcina pentru ca depinde de munca altui agent, el trebuie:
 
-Что важно из документации:
+1. Sa scrie in `agent-runtime/messages/` un mesaj catre agentul de care depinde
+2. Sa actualizeze `agent-runtime/state/status.md` cu statusul "BLOCKED — astept [agent-name]"
+3. Sa continue cu alte sarcini independente din lista sa
+4. Sa revina la sarcina blocata dupa ce primeste raspuns
 
-- `Agent Teams` являются экспериментальной функцией и требуют включения `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1`.
-- У команд есть lead и teammates, которые работают как отдельные Claude Code sessions.
-- Teammates могут общаться друг с другом напрямую.
-- Split-pane mode требует `tmux` или iTerm2.
-- Если сессия уже запущена внутри `tmux`, Claude Code может использовать split panes для teammates.
-- Каждый teammate загружает тот же проектный контекст, включая `CLAUDE.md`, skills и локальные настройки.
+### Comunicare
 
-## Обязательные настройки проекта
+- Toate rezultatele se scriu in fisiere, nu raman in conversatie
+- Fiecare agent actualizeaza `agent-runtime/state/status.md` cand incepe/finalizeaza o sarcina
+- Handoff-urile intre agenti se fac prin `agent-runtime/messages/`
+- Artefactele comune (shared) sunt in `agent-runtime/shared/`
+- Rezultatele finale sunt in `agent-runtime/outputs/`
 
-Этот проект должен оставаться настроенным так:
+### Reguli stricte
 
-- в `.claude/settings.json` должен быть включен `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1`
-- в `.claude/settings.json` должен быть установлен `teammateMode: "tmux"`
-- локальная конфигурация не должна переводить проект в `in-process` как основной режим демонстрации
+- Toti agentii lucreaza pe acelasi proiect QRChat (`/Users/ruslanconstantinovici/QRChat`)
+- Fiecare agent modifica DOAR fisierele din domeniul sau de competenta
+- Inainte de a modifica un fisier pe care alt agent l-ar putea modifica simultan, verifica statusul in `agent-runtime/state/status.md`
+- Nu face push la git fara aprobarea lead-ului
+- Dupa fiecare modificare, deploy pe simulator si telefon fizic (regula obligatorie)
+- Testeaza pe dispozitiv real inainte de a marca o sarcina ca finalizata
 
-Если эти настройки отсутствуют или изменены, их нужно восстановить перед запуском demo.
+## Structura runtime
 
-## Назначение проекта
-
-Проект реализует demo-first мультиагентный workflow со следующими ролями:
-
-- `showrunner`: управляет командой и зависимостями
-- `web-researcher`: ищет и собирает материалы
-- `fact-checker`: проверяет тезисы и снижает риск ошибок
-- `script-architect`: строит структуру YouTube-видео
-- `visual-director`: предлагает визуальные сцены и image prompts
-- `pdf-producer`: собирает итоговый отчет, готовый к экспорту в PDF
-
-Роли агентов лежат в `.claude/agents/`.
-
-## Обязательная структура работы
-
-Команда должна работать через явные артефакты и видимую коммуникацию.
-
-- Общие рабочие файлы: `agent-runtime/shared/`
-- Сообщения между агентами: `agent-runtime/messages/`
-- План и статусы: `agent-runtime/state/`
-- Финальные результаты: `agent-runtime/outputs/`
-
-Для этого проекта скрытая координация нежелательна. Если агент создал важный результат, он должен быть записан в файл. Если агент передает работу дальше, должен быть создан явный handoff.
-
-## Правила для lead и teammates
-
-Все Claude Code sessions в этой команде обязаны соблюдать следующие правила:
-
-- использовать `.claude/agents/` как источник ролей и специализации
-- вести работу так, чтобы взаимодействие агентов было видно в артефактах и сообщениях
-- не подменять командную работу одиночной сессией, если задача задумана как командная
-- не передавать в финальный скрипт и PDF неподтвержденные тезисы
-- использовать `showrunner` как основную точку координации
-- запускать cleanup только через lead
-
-Teammates не должны самостоятельно выполнять очистку команды. По документации Claude Code cleanup должен запускаться через lead-сессию после завершения работы и после остановки активных teammates.
-
-## Рекомендуемый порядок запуска
-
-1. Открыть `tmux`:
-
-```bash
-tmux new -s claude-agent-team
+```
+agent-runtime/
+  messages/      — comunicare inter-agenti (mesaje, cereri, raspunsuri)
+  shared/        — artefacte comune (planuri, checklists, dependente)
+  state/         — plan.md (plan curent), status.md (status board)
+  outputs/       — rezultate finale (rapoarte, audituri, checklists)
 ```
 
-2. Запустить Claude Code внутри `tmux`:
+## Echipa de agenti (7)
+
+| Agent | Domeniu | Fisiere principale |
+|-------|---------|-------------------|
+| security-engineer | Securitate, criptografie, autentificare | crypto/, server/index.js, storage/Database.ts |
+| backend-engineer | Server Node.js, API, persistenta | server/, services/PushTokenService.ts |
+| frontend-engineer | Ecrane, componente, UI/UX, accessibility | screens/, components/, utils/ThemeContext.tsx |
+| qa-engineer | Teste, calitate, npm audit, verificari | __tests__/, jest.config.js, package.json |
+| architect | Refactorizare, tipuri, arhitectura | services/MessagingService.ts, utils/types.ts |
+| network-engineer | WebRTC, signaling, P2P, apeluri | network/, services/CallKitService.ts |
+| release-engineer | App Store, CI/CD, metadata, deploy | ios/, android/, CHANGELOG.md, package.json |
+
+## Ordinea de lucru recomandata
+
+### Faza 1 — Critice (security-engineer + backend-engineer in paralel)
+- Fix autentificare server (GRACE_PERIOD)
+- Fix sender spoofing
+- Fix admin secret hardcodat
+- Limita pending message queue
+
+### Faza 2 — Stabilitate (architect + qa-engineer + network-engineer in paralel)
+- Fix teste broken
+- Refactorizare MessagingService
+- Fix memory leaks networking
+- TypeScript cleanup
+
+### Faza 3 — UI/UX (frontend-engineer)
+- Accessibility labels
+- Fix race conditions
+- i18n completare
+- Polish design
+
+### Faza 4 — Release (release-engineer, depinde de toate fazele anterioare)
+- Privacy Policy
+- App Store metadata
+- Screenshots
+- Submission
+
+## Lansare
 
 ```bash
+tmux new -s qrchat-team
 claude
 ```
 
-3. Дать lead-инструкцию на создание команды агентов в естественном языке, например:
-
-```text
-Создай Agent Team для подготовки YouTube-демо по мультиагентной системе.
-Используй роли showrunner, web-researcher, fact-checker, script-architect,
-visual-director и pdf-producer. Пусть агенты общаются между собой напрямую,
-работают через общие артефакты и ведут видимый status flow.
-```
-
-4. После завершения работы остановить нужных teammates и выполнить cleanup через lead.
-
-## Правила демонстрации для YouTube
-
-При запуске Agent Teams в этом проекте приоритетны не только правильные результаты, но и наглядность процесса.
-
-- минимум два агента должны стартовать параллельно
-- inter-agent messaging должно быть заметно
-- роли агентов должны быть различимы по функциям
-- хотя бы один этап должен показывать зависимость между агентами
-- финал должен завершаться материальными артефактами: script, visual plan, verified claims, report
-
-## Источники истины в проекте
-
-- Главная проектная инструкция: `CLAUDE.md`
-- Архитектура и варианты workflow: `thoughts/shared/specs/2026-03-13-claude-agent-teams-youtube-workflow.md`
-- Роли агентов: `.claude/agents/`
-- Рабочий runtime: `agent-runtime/`
-
-Если какая-либо инструкция конфликтует с этой страницей, для этого проекта приоритет у требований из `CLAUDE.md`, особенно у обязательного запуска через `tmux`.
+Instructiune: "Lanseaza echipa QRChat cu toti 7 agentii. Sarcina: [descriere]"

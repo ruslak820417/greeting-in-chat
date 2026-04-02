@@ -1,7 +1,32 @@
 {
   "permissions": {
     "allow": [
-      "WebSearch"
+      "Bash(*)",
+      "Read(*)",
+      "Write(*)",
+      "Edit(*)",
+      "WebSearch",
+      "WebFetch(*)",
+      "Glob(*)",
+      "Grep(*)",
+      "Agent(*)",
+      "Skill(gsd:new-project)",
+      "Skill(gsd:discuss-phase)",
+      "Skill(gsd:plan-phase)",
+      "Skill(gsd:execute-phase)"
+    ]
+  },
+  "hooks": {
+    "SubagentStop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "afplay /System/Library/Sounds/Glass.aiff &",
+            "timeout": 5
+          }
+        ]
+      }
     ]
   }
 }
